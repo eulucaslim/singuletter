@@ -12,4 +12,31 @@ Table News {
     created_at date
 }
 
+Table User {
+    id int [pk, increment]
+    username varchar(150)
+    email varchar(254)
+    password varchar(128)
+}
+
+Table User {
+    id int [pk, increment]
+    username varchar(150)
+    email varchar(254)
+    password varchar(128)
+}
+
+Table UserPreference {
+  id int [pk, increment]
+  user_id int [not null, unique]
+}
+
+Table UserPreferenceCategory {
+  user_preference_id int [not null]
+  category_id int [not null]
+}
+
 Ref: News.category_id > Category.id
+Ref: UserPreference.user_id > User.id 
+Ref: UserPreferenceCategory.user_preference_id > UserPreference.id
+Ref: UserPreferenceCategory.category_id > Category.id
