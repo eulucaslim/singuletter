@@ -1,0 +1,15 @@
+Table Category {
+    id int [pk, increment]
+    name varchar(80)
+    created_at date
+}
+
+Table News {
+    id int [pk, increment]
+    title varchar(100)
+    content text
+    category_id int
+    created_at date
+}
+
+Ref: News.category_id > Category.id

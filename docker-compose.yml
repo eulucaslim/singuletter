@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - singu_network
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
+  singuletter:
+    build: .
+    container_name: singuletter
+    command: ["python", "manage.py", "runserver", "0.0.0.0:${SINGU_LETTER_PORT}"]
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+    ports:
+      - "${SINGU_LETTER_PORT}:${SINGU_LETTER_PORT}"
+    networks:
+      - singu_network
+    depends_on:
+      db:
+        condition: service_healthy
+
+networks:
+  singu_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
