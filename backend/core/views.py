@@ -1,7 +1,9 @@
 from core.models import News, Category, UserPreference
 from core.serializers import NewsSerializer, NewsCreateSerializer, CategorySerializer
 from core.pagination import NewsPagination
+from datetime import timedelta
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
@@ -9,6 +11,21 @@ class NewsViewSet(viewsets.ModelViewSet):
     queryset = News.objects.all()
     serializer_class = NewsSerializer
     pagination_class = NewsPagination
+
+    # Filter by period
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        period = self.request.query_params.get('period')
+        now = timezone.now()
+
+        if period == 'day':
+            queryset = queryset.filter(created_at__gte=now - timedelta(days=1))
+        elif period == 'week':
+            queryset = queryset.filter(created_at__gte=now - timedelta(weeks=1))
+        elif period == 'month':
+            queryset = queryset.filter(created_at__gte=now - timedelta(days=30))
+
+        return queryset.order_by('-created_at')
         
     def retrieve(self, request, pk=None):
         news = get_object_or_404(self.queryset, pk=pk)
