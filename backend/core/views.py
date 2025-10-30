@@ -1,19 +1,14 @@
 from core.models import News, Category, UserPreference
 from core.serializers import NewsSerializer, NewsCreateSerializer, CategorySerializer
+from core.pagination import NewsPagination
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
-# Create your views here.
-
-class NewsViewSet(viewsets.ViewSet):
+class NewsViewSet(viewsets.ModelViewSet):
     queryset = News.objects.all()
     serializer_class = NewsSerializer
-
-    def list(self, request):
-        if request.method == "GET":
-            serializer = NewsSerializer(self.queryset, many=True)
-            return Response(serializer.data)
+    pagination_class = NewsPagination
         
     def retrieve(self, request, pk=None):
         news = get_object_or_404(self.queryset, pk=pk)
