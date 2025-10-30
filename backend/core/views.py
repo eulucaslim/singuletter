@@ -1,16 +1,18 @@
 from core.models import News, Category, UserPreference
-from core.serializers import NewsSerializer, NewsCreateSerializer, CategorySerializer
+from core.serializers import NewsSerializer, NewsCreateSerializer, CategorySerializer, UserPreferenceSerializer
 from core.pagination import NewsPagination
 from datetime import timedelta
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import viewsets, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 class NewsViewSet(viewsets.ModelViewSet):
     queryset = News.objects.all()
     serializer_class = NewsSerializer
     pagination_class = NewsPagination
+    permission_classes = [ IsAuthenticated ]
 
     # Filter by period
     def get_queryset(self):
@@ -86,6 +88,7 @@ class NewsViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(viewsets.ViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [ IsAuthenticated ]
 
     def list(self, request):
         if request.method == "GET":
@@ -134,3 +137,25 @@ class CategoryViewSet(viewsets.ViewSet):
 
         category.delete()
         return Response({"message": "Category deleted sucessfully!"}, status=status.HTTP_204_NO_CONTENT)
+
+class UserPreferenceViewSet(viewsets.ViewSet):
+    queryset = UserPreference.objects.all()
+    serializer_class = UserPreferenceSerializer
+    permission_classes = [ IsAuthenticated ]
+
+    def get_profile(self, request):
+        user_preference, _ = UserPreference.objects.get_or_create(user=request.user)
+        return user_preference
+
+    def list(self, request):
+        user = self.get_profile(request)
+        serializer = UserPreferenceSerializer(user)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        user = self.get_profile(request)
+        serializer = UserPreferenceSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
