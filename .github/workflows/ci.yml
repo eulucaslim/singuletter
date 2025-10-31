@@ -30,6 +30,6 @@ jobs:
     - name: Build Docker Image
       run: |
         docker compose -f docker-compose-actions.yml up -d --wait
-    - name: Test with pytest
+    - name: Run tests
       run: |
-        docker compose exec singuletter python manage.py test
+        docker compose exec -T singuletter python manage.py test
