@@ -19,6 +19,8 @@ jobs:
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      SINGU_LETTER_PORT: ${{ secrets.SINGU_LETTER_PORT }}
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python 3.11
