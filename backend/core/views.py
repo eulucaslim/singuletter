@@ -107,7 +107,7 @@ class CategoryViewSet(viewsets.ViewSet):
             return Response({
                 "message": "Category created sucessfully", 
                 "data": serializer.data
-                }, status=status.HTTP_200_OK
+                }, status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -138,7 +138,7 @@ class CategoryViewSet(viewsets.ViewSet):
         category.delete()
         return Response({"message": "Category deleted sucessfully!"}, status=status.HTTP_204_NO_CONTENT)
 
-class UserPreferenceViewSet(viewsets.ViewSet):
+class UserPreferenceViewSet(viewsets.ModelViewSet):
     queryset = UserPreference.objects.all()
     serializer_class = UserPreferenceSerializer
     permission_classes = [ IsAuthenticated ]
@@ -152,7 +152,7 @@ class UserPreferenceViewSet(viewsets.ViewSet):
         serializer = UserPreferenceSerializer(user)
         return Response(serializer.data)
 
-    def update(self, request, pk=None):
+    def update(self, request):
         user = self.get_profile(request)
         serializer = UserPreferenceSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():

@@ -19,7 +19,7 @@ class CategorySerializer(serializers.ModelSerializer):
         exclude = ["created_at"]
 
 class UserPreferenceSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(many=True, read_only=True)
+    categories = CategorySerializer(many=True, read_only=True, required=False)
     category_ids = serializers.PrimaryKeyRelatedField(
         many=True,
         write_only=True,
@@ -30,9 +30,3 @@ class UserPreferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPreference
         fields = ["categories", "category_ids"]
-
-    def update(self, instance, validated_data):
-        categories = validated_data.get("categories", [])
-        instance.categories.set(categories)
-        instance.save()
-        return instance
