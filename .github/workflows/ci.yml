@@ -32,4 +32,4 @@ jobs:
         docker compose -f docker-compose-actions.yml up -d --wait
     - name: Test with pytest
       run: |
-        docker exec -t singuletter python manage.py test
+        docker exec -it singuletter python manage.py test
