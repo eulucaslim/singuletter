@@ -20,6 +20,9 @@ jobs:
       ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
       SINGU_LETTER_PORT: ${{ secrets.SINGU_LETTER_PORT }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      API_HOST: ${{ secrets.API_HOST }}
+      API_PORT: ${{ secrets.API_PORT }}
 
     steps:
     - uses: actions/checkout@v4
@@ -29,5 +32,5 @@ jobs:
         python-version: "3.11"
     - name: Build Docker Image and Run tests
       run: |
-        docker compose -f docker-compose-actions.yml up -d --wait
+        docker compose -f docker-compose-actions.yml up --build -d --wait
 
