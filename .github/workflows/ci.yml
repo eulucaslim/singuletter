@@ -20,6 +20,9 @@ jobs:
       ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
       SINGU_LETTER_PORT: ${{ secrets.SINGU_LETTER_PORT }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      APP_HOST: ${{ secrets.APP_HOST }}
+      APP_PORT: ${{ secrets.APP_PORT }}
 
     steps:
     - uses: actions/checkout@v4
@@ -27,7 +30,10 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.11"
-    - name: Build Docker Image and Run tests
+    - name: Build Docker Image
       run: |
         docker compose -f docker-compose-actions.yml up --build -d --wait
+    - name: Run Tests
+      run: |
+        docker compose exec singuletter python manage.py test
 
