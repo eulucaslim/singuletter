@@ -8,10 +8,11 @@ class NewsSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'content', 'category_id', 'category_name')
 
 class NewsCreateSerializer(serializers.ModelSerializer):
-    category_id = serializers.IntegerField()
+    category_id = serializers.IntegerField(required=False)
+    category_name = serializers.CharField()
     class Meta:
         model = News
-        fields = ('title', 'content', 'category_id')
+        fields = ('title', 'content', 'category_id', 'category_name')
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

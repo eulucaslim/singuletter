@@ -10,7 +10,8 @@
 ## 🚀 Tecnologias utilizadas
 
 - 🐍 **Python 3.11**
-- 🧱 **Django 5**
+- 🏃 **FastAPI**
+- 🧱 **Django**
 - 🌐 **Django REST Framework**
 - 🐘 **PostgreSQL 15**
 - 🐳 **Docker**
@@ -21,6 +22,6 @@
 **para inicializar a aplicação**
 
 ``
-docker compose up -d
+docker compose up --build -d
 ``
 
