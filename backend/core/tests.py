@@ -21,7 +21,7 @@ class NewsViewSetTests(APITestCase):
         self.news_data = {
             "title": "Notícia Teste",
             "content": "Conteúdo da notícia",
-            "category_id": self.category.id
+            "category_name": "Teste"
         }
 
     def test_create_news(self):
@@ -33,7 +33,6 @@ class NewsViewSetTests(APITestCase):
 
     def test_list_news(self):
         """ Return all News (GET /news/)"""
-        News.objects.create(**self.news_data)
         response = self.client.get(self.url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 4)

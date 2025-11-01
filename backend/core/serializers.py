@@ -2,6 +2,7 @@ from core.models import News, Category, UserPreference
 from rest_framework import serializers
 
 class NewsSerializer(serializers.ModelSerializer):
+    category_id = serializers.IntegerField(required=False)
     category_name = serializers.CharField(source='category.name', read_only=True)
     class Meta:
         model = News
