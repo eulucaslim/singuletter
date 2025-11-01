@@ -37,10 +37,10 @@ class NewsViewSet(viewsets.ModelViewSet):
     def create(self, request):
         serializer = NewsCreateSerializer(data=request.data)
         if serializer.is_valid():
-            if "category_id" in serializer.data:
-                category_id = serializer.data.get('category_id')
+            if "category_name" in serializer.data:
+                category_name = serializer.data.get('category_name')
                 try:
-                    category = Category.objects.get(id=category_id)
+                    category, _ = Category.objects.get_or_create(name=category_name)
                 except Category.DoesNotExist:
                     return Response({"error": "Category not found!"}, status=status.HTTP_404_NOT_FOUND)
 

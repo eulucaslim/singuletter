@@ -29,5 +29,5 @@ jobs:
         python-version: "3.11"
     - name: Build Docker Image and Run tests
       run: |
-        docker compose -f docker-compose-actions.yml up -d --wait
+        docker compose -f docker-compose-actions.yml up --build -d --wait
 
