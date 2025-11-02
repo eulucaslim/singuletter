@@ -6,7 +6,7 @@ class NewsSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     class Meta:
         model = News
-        fields = ('id', 'title', 'content', 'category_id', 'category_name')
+        fields = ('id', 'title', 'content', 'category_id', 'category_name', 'created_at')
 
 class NewsCreateSerializer(serializers.ModelSerializer):
     category_id = serializers.IntegerField(required=False)
