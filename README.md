@@ -16,6 +16,9 @@
 - 🐘 **PostgreSQL 15**
 - 🐳 **Docker**
 - ✅ **DRF Tests**
+- 🐇 **RabbitMQ**
+- ©️ **Celery**
+- 🖥️ **Gemini API**
 
 ## Para executar a aplicação
 - **🚨 Antes deve executar deve ser criado o arquivo .env com base no .env.example. Abaixo está o comando**
