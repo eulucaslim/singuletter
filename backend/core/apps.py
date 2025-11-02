@@ -1,15 +1,17 @@
+
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 from django.contrib.auth import get_user_model
 from setup.settings import USER_ADMIN
-
 
 class CoreConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'core'
 
     def ready(self):
+        from core.signals import create_periodic_tasks
         post_migrate.connect(create_default_superuser, sender=self)
+        post_migrate.connect(create_periodic_tasks, sender=self)
 
 def create_default_superuser(sender, **kwargs):
     User = get_user_model()

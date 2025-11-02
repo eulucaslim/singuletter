@@ -54,6 +54,14 @@ services:
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_VHOST=${RABBITMQ_VHOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_ADMIN_PORT=${RABBITMQ_ADMIN_PORT}
+      - API_HOST=ai_app
+      - API_PORT=${API_PORT}
     ports:
       - "${SINGU_LETTER_PORT}:${SINGU_LETTER_PORT}"
     networks:
@@ -61,10 +69,120 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_service
+    ports:
+      - "${RABBITMQ_PORT}:${RABBITMQ_PORT}"
+      - "${RABBITMQ_ADMIN_PORT}:${RABBITMQ_ADMIN_PORT}"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_VHOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_ADMIN_PORT=${RABBITMQ_ADMIN_PORT}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+    networks:
+      - singu_network
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_VHOST=${RABBITMQ_VHOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_ADMIN_PORT=${RABBITMQ_ADMIN_PORT}
+      - API_HOST=ai_app
+      - API_PORT=${API_PORT}
+    container_name: celery_worker
+    command: celery -A setup worker -l info --pool=solo
+    networks:
+      - singu_network
+    depends_on:
+      - rabbitmq
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_VHOST=${RABBITMQ_VHOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_ADMIN_PORT=${RABBITMQ_ADMIN_PORT}
+      - API_HOST=ai_app
+      - API_PORT=${API_PORT}
+    container_name: celery_beat
+    command: celery -A setup beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    networks:
+      - singu_network
+    depends_on:
+      - rabbitmq
+
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    container_name: flower
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_VHOST=${RABBITMQ_VHOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_ADMIN_PORT=${RABBITMQ_ADMIN_PORT}
+      - FLOWER_PORT=${FLOWER_PORT}
+      - API_HOST=ai_app
+      - API_PORT=${API_PORT}
+    command: celery -A setup flower --address=0.0.0.0 --port=${FLOWER_PORT}
+    ports:
+      - "${FLOWER_PORT}:${FLOWER_PORT}"
+    networks:
+      - singu_network
+    depends_on:
+      - rabbitmq
 
 networks:
   singu_network:
     driver: bridge
 
 volumes:
+  rabbitmq_data:
+    driver: local
   postgres_data:
