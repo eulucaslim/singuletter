@@ -45,12 +45,10 @@ export default function RegisterPage() {
       console.log(formData)
       const registerResponse = await api.post("/users/", formData)
 
-      console.log("REGISTER RESPONSE", registerResponse.data)
-
       localStorage.setItem("user", JSON.stringify(registerResponse.data))
       
       const userInfo = JSON.parse(localStorage.getItem("user")!)
-      console.log("USER INFOOO", userInfo)
+
       const loginResponse = await api.post("/login/", {
         username: userInfo.username,
         password: formData.password,

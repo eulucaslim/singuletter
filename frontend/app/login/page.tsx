@@ -11,9 +11,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import api from "@/lib/api-client"
 import axios from "axios"
+import { Token, useAuth } from "@/contexts/AuthContext"
+import { access } from "fs"
+import { refresh } from "next/cache"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { accessToken, login, logout } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [formData, setFormData] = useState({
@@ -36,15 +40,18 @@ export default function LoginPage() {
 
     try {
       const response = await api.post("/login/", formData)
-      console.log('Responseee',response)
-      localStorage.setItem("access", response.data.access)
-      localStorage.setItem("refresh", response.data.refresh)
+
+      const payload = {
+        access: response.data.access,
+        refresh: response.data.refresh
+      } as Token
+      login(payload)
       router.push("/news")
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.error || "Erro ao fazer login")
+        setError(err.response?.data?.error || "Erro ao fazer login, Verifique suas informações!")
       } else {
-        setError(err instanceof Error ? err.message : "Erro ao fazer login")
+        setError(err instanceof Error ? err.message : "Erro ao fazer login!")
       }
     } finally{
       setLoading(false)

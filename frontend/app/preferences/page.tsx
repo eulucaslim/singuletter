@@ -10,22 +10,15 @@ import { AlertCircle, CheckCircle } from "lucide-react"
 import api from "@/lib/api-client"
 import axios from "axios"
 
-const DEFAULT_CATEGORIES = [
-  { name: "Tecnologia", icon: "💻" },
-  { name: "Negócios", icon: "💼" },
-  { name: "Saúde", icon: "⚕️" },
-  { name: "Política", icon: "🏛️" },
-  { name: "Esportes", icon: "⚽" },
-  { name: "Entretenimento", icon: "🎬" },
-  { name: "Ciência", icon: "🔬" },
-  { name: "Educação", icon: "🎓" },
-  { name: "Meio Ambiente", icon: "🌍" },
-  { name: "Cultura", icon: "🎭" },
-]
+interface Category {
+  id: number
+  name: string
+}
 
 export default function CategoriesPage() {
   const router = useRouter()
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
@@ -40,13 +33,15 @@ export default function CategoriesPage() {
 
     const { user_id } = parseJwt(accessToken)
     setUserId(user_id)
+    getAllCategories()
     loadPreferences()
   }, [router])
 
   const loadPreferences = async () => {
     try {
-      const response = await api.get(`users/me/preferences`)
+      const response = await api.get(`users/me/preferences/`)
       setSelectedCategories(response.data.categories || [])
+      selectedCategories.map(item => toggleCategory(item))
     } catch (err) {
       console.error("Erro ao carregar preferências:", err)
     }
@@ -59,20 +54,29 @@ export default function CategoriesPage() {
   }
   };
 
-  const toggleCategory = (category: string) => {
+  const toggleCategory = (category: Category) => {
     setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
+      prev.includes(category) ? prev.filter((c) => c.name !== category.name) : [...prev, category],
     )
     setSuccess(false)
   }
 
   const handleSelectAll = () => {
-    if (selectedCategories.length === DEFAULT_CATEGORIES.length) {
+    if (selectedCategories.length === categories.length) {
       setSelectedCategories([])
     } else {
-      setSelectedCategories(DEFAULT_CATEGORIES.map((c) => c.name))
+      setSelectedCategories(categories.map((c) => c))
     }
     setSuccess(false)
+  }
+
+  const getAllCategories = async () => {
+    try {
+      const response = await api.get(`preferences/`)
+      setCategories(response.data || [])
+    } catch (err) {
+      console.error("Erro ao carregar categorias:", err)
+    }
   }
 
   const handleSave = async () => {
@@ -81,7 +85,7 @@ export default function CategoriesPage() {
     setSuccess(false)
 
     try {
-      await api.put(`users/me/preferences/`, { category_ids: selectedCategories })
+      await api.put(`users/me/preferences/`, { category_ids: selectedCategories.map(c => c.id) })
 
       setSuccess(true)
       setTimeout(() => {
@@ -129,26 +133,25 @@ export default function CategoriesPage() {
             {/* Select All Button */}
             <div className="mb-6 pb-6 border-b border-border">
               <Button variant="outline" onClick={handleSelectAll} disabled={loading} className="text-sm bg-transparent">
-                {selectedCategories.length === DEFAULT_CATEGORIES.length ? "Desselecionar Tudo" : "Selecionar Tudo"}
+                {selectedCategories.length === categories.length ? "Desselecionar Tudo" : "Selecionar Tudo"}
               </Button>
             </div>
 
             {/* Categories Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-              {DEFAULT_CATEGORIES.map(({ name, icon }) => (
-                <div key={name} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors">
+              {categories.map(( category ) => (
+                <div key={category.name} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted transition-colors">
                   <Checkbox
-                    id={name}
-                    checked={selectedCategories.includes(name)}
-                    onCheckedChange={() => toggleCategory(name)}
+                    id={category.name}
+                    checked={selectedCategories.some((c) => c.id === category.id)}
+                    onCheckedChange={() => toggleCategory(category)}
                     disabled={loading}
                     className="w-5 h-5"
                   />
-                  <Label htmlFor={name} className="cursor-pointer flex items-center gap-2 flex-1">
-                    <span className="text-lg">{name}</span>
-                    <span>{icon}</span>
+                  <Label htmlFor={category.name} className="cursor-pointer flex items-center gap-2 flex-1">
+                    <span className="text-lg">{category.name}</span>
                   </Label>
-                  {selectedCategories.includes(name) && <div className="w-2 h-2 rounded-full bg-primary"></div>}
+                  {selectedCategories.includes(category) && <div className="w-2 h-2 rounded-full bg-primary"></div>}
                 </div>
               ))}
             </div>
@@ -158,14 +161,19 @@ export default function CategoriesPage() {
               <p className="text-sm text-foreground">
                 <span className="font-semibold text-lg text-primary">{selectedCategories.length}</span>
                 {" de "}
-                <span className="font-semibold">{DEFAULT_CATEGORIES.length}</span>
+                <span className="font-semibold">{categories.length}</span>
                 {" categorias selecionadas"}
               </p>
-              {selectedCategories.length > 0 && (
+              {selectedCategories.length ? (
                 <p className="text-xs text-muted-foreground mt-2">
-                  Você receberá notícias de: {selectedCategories.join(", ")}
+                  Você receberá notícias de: {selectedCategories.map(item => item.name).join(', ')}
                 </p>
-              )}
+              ) : (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Não há notícias selecionadas!, Selecione alguma noticia
+                </p>
+              )
+              }
             </div>
 
             {/* Action Buttons */}
