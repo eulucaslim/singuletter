@@ -6,19 +6,24 @@
 > Inclui autenticação, registro de usuários e endpoints personalizados.
 
 ---
-
-## 🚀 Tecnologias utilizadas
-
+## Linguagens utilizadas
 - 🐍 **Python 3.11**
-- 🏃 **FastAPI**
+- 🔣 **Typescript**
+
+## 🚀 Frameworks e Bibliotecas utilizadas
 - 🧱 **Django**
 - 🌐 **Django REST Framework**
-- 🐘 **PostgreSQL 15**
+- 🏃 **FastAPI**
 - 🐳 **Docker**
 - ✅ **DRF Tests**
 - 🐇 **RabbitMQ**
 - ©️ **Celery**
 - 🖥️ **Gemini API**
+- 🚀 **Next.js**
+- ✨ **React.js**
+
+## Banco de Dados utilizado
+- 🐘 **PostgreSQL 15**
 
 ## Para executar a aplicação
 - **🚨 Antes deve executar deve ser criado o arquivo .env com base no .env.example. Abaixo está o comando**

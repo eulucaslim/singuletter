@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import api from "@/lib/api-client"
 import axios from "axios"
+import { Token, useAuth } from "@/contexts/AuthContext"
 
 interface User {
   username: string
@@ -20,6 +21,7 @@ interface User {
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [formData, setFormData] = useState<User>({
@@ -42,22 +44,22 @@ export default function RegisterPage() {
     setError("")
 
     try {
-      console.log(formData)
       const registerResponse = await api.post("/users/", formData)
 
-      localStorage.setItem("user", JSON.stringify(registerResponse.data))
-      
-      const userInfo = JSON.parse(localStorage.getItem("user")!)
+      const { username } = registerResponse.data
 
       const loginResponse = await api.post("/login/", {
-        username: userInfo.username,
+        username: username,
         password: formData.password,
       })
+      const payload = {
+        access: loginResponse.data.access,
+        refresh: loginResponse.data.refresh
+      } as Token
 
-      localStorage.setItem("access", loginResponse.data.access)
-      localStorage.setItem("refresh", loginResponse.data.refresh)
-
+      login(payload)
       router.push("/news")
+
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.error || "Erro ao registrar")
