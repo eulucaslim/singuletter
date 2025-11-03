@@ -132,7 +132,8 @@ services:
     networks:
       - singu_network
     depends_on:
-      - rabbitmq
+     db:
+        condition: service_healthy
 
   celery_beat:
     build:
@@ -164,7 +165,8 @@ services:
     networks:
       - singu_network
     depends_on:
-      - rabbitmq
+      db:
+        condition: service_healthy
 
   flower:
     build:
@@ -199,7 +201,8 @@ services:
     networks:
       - singu_network
     depends_on:
-      - rabbitmq
+      db:
+        condition: service_healthy
 
 networks:
   singu_network:
