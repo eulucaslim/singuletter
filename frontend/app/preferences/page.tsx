@@ -10,7 +10,7 @@ import { AlertCircle, CheckCircle } from "lucide-react"
 import api from "@/lib/api-client"
 import axios from "axios"
 
-interface Category {
+export interface Category {
   id: number
   name: string
 }
@@ -86,11 +86,7 @@ export default function CategoriesPage() {
 
     try {
       await api.put(`users/me/preferences/`, { category_ids: selectedCategories.map(c => c.id) })
-
       setSuccess(true)
-      setTimeout(() => {
-        router.push("/news")
-      }, 1500)
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.error || "Erro ao salvar")

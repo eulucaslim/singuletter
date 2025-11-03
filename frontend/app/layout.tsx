@@ -23,9 +23,9 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`font-sans antialiased`}>
         <AuthProvider>
-          <Navbar/>
-            {children}
-          <Analytics />
+        <Navbar/>
+        {children}
+        <Analytics />
         </AuthProvider>
       </body>
     </html>

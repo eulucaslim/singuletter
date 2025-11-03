@@ -12,12 +12,10 @@ import { Label } from "@/components/ui/label"
 import api from "@/lib/api-client"
 import axios from "axios"
 import { Token, useAuth } from "@/contexts/AuthContext"
-import { access } from "fs"
-import { refresh } from "next/cache"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { accessToken, login, logout } = useAuth()
+  const { login } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [formData, setFormData] = useState({

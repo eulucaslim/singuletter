@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Calendar, ExternalLink } from "lucide-react"
 import api from "@/lib/api-client"
 import axios from "axios"
+import { FilterButton } from "@/components/filter-bottom"
+import { Category } from "../preferences/page"
 
 interface News {
   id: string
@@ -16,13 +18,14 @@ interface News {
   content: string
   category_name: string
   created_at: string
-  url?: string
 }
 
 
 export default function NewsPage() {
   const router = useRouter()
   const [news, setNews] = useState<News[]>([])
+  const [categories, setCategories] = useState<string[]>([])
+  const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [filter, setFilter] = useState<string>("all")
@@ -34,15 +37,14 @@ export default function NewsPage() {
       router.push("/login")
       return
     }
-
-    fetchNews()
+    fetchNews(period)
+    fetchCategories()
   }, [router])
 
-  const fetchNews = async () => {
+  const fetchNews = async (selectedPeriod: string) => {
     try {
       setLoading(true)
-      const response = await api.get("/news")
-      console.log("Response backend", response.data)
+      const response = await api.get(`/news?period=${selectedPeriod}`)
       const results = Array.isArray(response.data.results) ? response.data.results : []
       setNews(results)
     } catch (err) {
@@ -56,20 +58,27 @@ export default function NewsPage() {
     }
   }
 
-  const categories = Array.from(new Set(news.map((item) => item.category_name)))
-  const filteredNews = filter === "all" ? news : news.filter((item) => item.category_name === filter)
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get('/users/me/preferences/')
+      if (response.data.categories.length < 1) {
+        const categoriesResponse = await api.get('/preferences/')
+        setCategories(categoriesResponse.data.map((item: Category) => item.name))
+      } else {
+        setCategories(response.data.categories.map((item: Category)=> item.name) || []) 
+      }
 
-  const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: string } = {
-      Tecnologia: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      Negócios: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      Saúde: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-      Política: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-      Esportes: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-      Entretenimento: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
+    } catch (err) {
+      console.error("Erro ao buscar categorias:", err)
     }
-    return colors[category] || "bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200"
   }
+
+  const handlePeriodChange = (newPeriod: 'day' | 'week' | 'month') => {
+    setPeriod(newPeriod)
+    fetchNews(newPeriod)
+  }
+
+  const filteredNews = filter === "all" ? news : news.filter((item) => item.category_name === filter)
 
   return (
     <main className="min-h-[calc(100vh-64px)] bg-background py-12">
@@ -78,6 +87,10 @@ export default function NewsPage() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2 text-balance">Notícias Recentes</h1>
           <p className="text-muted-foreground">Acompanhe as notícias das suas categorias preferidas</p>
+          <FilterButton
+            defaultPeriod={period}
+            onSelect={handlePeriodChange}
+          />
         </div>
 
         {/* Filter Buttons */}
@@ -129,7 +142,7 @@ export default function NewsPage() {
               <p className="text-muted-foreground">
                 Atualize suas preferências de categorias para receber notícias relevantes
               </p>
-              <Button onClick={() => router.push("/categories")} className="mt-4">
+              <Button onClick={() => router.push("/preferences")} className="mt-4">
                 Gerenciar Categorias
               </Button>
             </CardContent>
@@ -147,7 +160,7 @@ export default function NewsPage() {
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                    <Badge variant="secondary" className={getCategoryColor(item.category_name)}>
+                    <Badge variant="secondary" >
                       {item.category_name}
                     </Badge>
                     <span className="flex items-center gap-1">
@@ -159,17 +172,6 @@ export default function NewsPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-foreground mb-4 leading-relaxed">{item.content}</p>
-                  {item.url && (
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-primary hover:underline font-medium"
-                    >
-                      Leia a notícia completa
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  )}
                 </CardContent>
               </Card>
             ))}
