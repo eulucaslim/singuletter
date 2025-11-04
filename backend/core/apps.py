@@ -3,16 +3,16 @@ from django.apps import AppConfig
 from django.db.models.signals import post_migrate
 from django.contrib.auth import get_user_model
 from setup.settings import USER_ADMIN
+import json
 import random
 class CoreConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'core'
 
     def ready(self):
-        from core.signals import create_periodic_tasks
         post_migrate.connect(create_default_superuser, sender=self)
-        post_migrate.connect(create_default_data, sender=self)
         post_migrate.connect(create_periodic_tasks, sender=self)
+        post_migrate.connect(create_default_data, sender=self)
 
 def create_default_superuser(sender, **kwargs):
     User = get_user_model()
@@ -76,3 +76,28 @@ def create_default_data(sender, **kwargs):
                 created_at=timezone.now()
             ),
         ])
+
+def create_periodic_tasks(sender, **kwargs):
+    """Create or update periodic Celery Beat tasks after migrations."""
+    from django_celery_beat.models import PeriodicTask, CrontabSchedule
+    try:
+        schedule, _ = CrontabSchedule.objects.get_or_create(
+            minute='0',
+            hour='*',
+            day_of_week='1,2,3,4,5',
+            timezone='America/Sao_Paulo',
+        )
+
+        PeriodicTask.objects.update_or_create(
+            name='save_news_periodic_task',
+            defaults={
+                'task': 'core.tasks.save_news',
+                'crontab': schedule,
+                'args': json.dumps([]),
+                'enabled': True,
+            },
+        )
+
+        print("✅ Periodic task 'save_news_periodic_task' created or updated successfully.")
+    except Exception as e:
+        print(f"⚠️ Could not create periodic task: {e}")
