@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -39,21 +38,34 @@ export default function LoginPage() {
     try {
       const response = await api.post("/login/", formData)
 
-      const payload = {
+      const payload: Token = {
         access: response.data.access,
         refresh: response.data.refresh
-      } as Token
+      }
+
       login(payload)
       router.push("/news")
+
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.error || "Erro ao fazer login, Verifique suas informações!")
+        const status = err.response?.status
+        const backendMessage = err.response?.data?.detail
+
+        if (status === 401) {
+          setError("Usuário ou senha incorretos.")
+        } else if (status === 400) {
+          setError(backendMessage || "Campos inválidos. Verifique os dados e tente novamente.")
+        } else if (status === 500) {
+          setError("Erro interno no servidor. Tente novamente mais tarde.")
+        } else {
+          setError(backendMessage || "Erro ao fazer login. Verifique suas informações!")
+        }
       } else {
-        setError(err instanceof Error ? err.message : "Erro ao fazer login!")
+          setError(err instanceof Error ? err.message : "Erro inesperado ao fazer login.")
       }
-    } finally{
+    }  finally {
       setLoading(false)
-    }
+      }
   }
 
   return (
